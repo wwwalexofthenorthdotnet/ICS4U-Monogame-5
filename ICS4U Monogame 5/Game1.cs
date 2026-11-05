@@ -22,7 +22,7 @@ namespace ICS4U_Monogame_5
         Screen screen;
         Rectangle window;
 
-        List<Texture2D> booTextures;
+        List<Texture2D> ghostTextures;
 
         Texture2D mario;
         Texture2D background;
@@ -31,6 +31,8 @@ namespace ICS4U_Monogame_5
 
         MouseState mouseState;
         Random generator;
+
+        Ghost ghost1;
 
         public Game1()
         {
@@ -50,7 +52,9 @@ namespace ICS4U_Monogame_5
 
             _graphics.ApplyChanges();
 
-            booTextures = new List<Texture2D>();
+            ghostTextures = new List<Texture2D>();
+
+            ghost1 = new Ghost(ghostTextures, new Rectangle(150, 250, 40, 40));
 
             base.Initialize();
         }
@@ -59,14 +63,14 @@ namespace ICS4U_Monogame_5
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
 
-        //TODO: use this.Content to load your game content here
+            //TODO: use this.Content to load your game content here
 
-            booTextures.Add(Content.Load<Texture2D>("Images/boo-stopped"));
+            ghostTextures.Add(Content.Load<Texture2D>("Images/boo-stopped"));
 
             background = Content.Load<Texture2D>("images/haunted-background");
 
             for (int i = 1; i <= 8; i++)
-                booTextures.Add(Content.Load<Texture2D>("Images/boo-move-" + i));
+                ghostTextures.Add(Content.Load<Texture2D>("Images/boo-move-" + i));
         }
 
         protected override void Update(GameTime gameTime)
@@ -75,6 +79,9 @@ namespace ICS4U_Monogame_5
                 Exit();
 
             // TODO: Add your update logic here
+
+            mouseState = Mouse.GetState();
+            ghost1.Update(gameTime, mouseState);
 
             base.Update(gameTime);
         }
@@ -88,6 +95,7 @@ namespace ICS4U_Monogame_5
             _spriteBatch.Begin();
 
             _spriteBatch.Draw(background, window, Color.White);
+            ghost1.Draw(_spriteBatch);
 
             _spriteBatch.End();
 
