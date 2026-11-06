@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
+using System.Reflection.Metadata;
 using System.Runtime.Versioning;
 
 namespace ICS4U_Monogame_5
@@ -24,6 +25,8 @@ namespace ICS4U_Monogame_5
 
         List<Texture2D> ghostTextures;
 
+        Vector2 cursorPos;
+
         Texture2D mario;
         Texture2D background;
         Texture2D endBackground;
@@ -32,7 +35,11 @@ namespace ICS4U_Monogame_5
         MouseState mouseState;
         Random generator;
 
+        List<Ghost> ghosts;
+
         Ghost ghost1;
+
+        KeyboardState keyboardState;
 
         public Game1()
         {
@@ -52,9 +59,21 @@ namespace ICS4U_Monogame_5
 
             _graphics.ApplyChanges();
 
+            ghosts = new List<Ghost>();
+
+            generator = new Random();
+
             ghostTextures = new List<Texture2D>();
 
-            ghost1 = new Ghost(ghostTextures, new Rectangle(150, 250, 40, 40));
+
+
+            for (int i = 0; i < 20; i++)
+            {
+                int size = generator.Next(30, 51);
+                ghosts.Add(new Ghost(ghostTextures, new Rectangle(generator.Next(window.Width - size), generator.Next(window.Height - size), size, size)));
+            }
+
+            screen = Screen.Title;
 
             base.Initialize();
         }
@@ -69,6 +88,11 @@ namespace ICS4U_Monogame_5
 
             background = Content.Load<Texture2D>("images/haunted-background");
 
+            title = Content.Load<Texture2D>("images/haunted-title");
+
+            endBackground = Content.Load<Texture2D>("images/haunted-end-screen");
+
+            mario = Content.Load<Texture2D>("images/mario");
             for (int i = 1; i <= 8; i++)
                 ghostTextures.Add(Content.Load<Texture2D>("Images/boo-move-" + i));
         }
@@ -81,9 +105,30 @@ namespace ICS4U_Monogame_5
             // TODO: Add your update logic here
 
             mouseState = Mouse.GetState();
-            ghost1.Update(gameTime, mouseState);
+            keyboardState = Keyboard.GetState();
 
+
+            if (screen == Screen.Title)
+            {
+                if (keyboardState.IsKeyDown(Keys.Enter))
+                    screen = Screen.House;
+            }
+            else if (screen == Screen.House)
+            {
+                IsMouseVisible = false;
+
+                cursorPos = new Vector2(mouseState.X, mouseState.Y);
+
+
+                for (int i = 0; i < ghosts.Count; i++)
+                {
+                    ghosts[i].Update(gameTime, mouseState);
+                    if (ghosts[i].Contains(mouseState.Position))
+                        screen = Screen.End;
+                }
+            }
             base.Update(gameTime);
+
         }
 
         protected override void Draw(GameTime gameTime)
@@ -94,8 +139,24 @@ namespace ICS4U_Monogame_5
 
             _spriteBatch.Begin();
 
-            _spriteBatch.Draw(background, window, Color.White);
-            ghost1.Draw(_spriteBatch);
+            if (screen == Screen.Title)
+                _spriteBatch.Draw(title, window, Color.White);
+            else if (screen == Screen.House)
+            {
+                
+                _spriteBatch.Draw(background, window, Color.White);
+                foreach (Ghost ghost in ghosts)
+                    ghost.Draw(_spriteBatch);
+                _spriteBatch.Draw(mario, cursorPos, Color.White);
+
+            }
+            else
+                _spriteBatch.Draw(endBackground, window, Color.White);
+
+            
+
+
+            
 
             _spriteBatch.End();
 

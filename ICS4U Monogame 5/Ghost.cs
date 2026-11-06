@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,12 +15,18 @@ namespace ICS4U_Monogame_5
     {
         private List<Texture2D> _textures;
         private Vector2 _speed;
+
+        private int _randSpeed;
         private Rectangle _location;
         private int _textureIndex;
         private SpriteEffects _direction;
 
         private float _animationSpeed;
         private float _seconds;
+
+        private double _speedMult;
+
+        private Random _generator;
 
         public Rectangle Rect
         {
@@ -35,21 +42,47 @@ namespace ICS4U_Monogame_5
 
             _animationSpeed = 0.2f;
             _seconds = 0;
+
+            _speedMult = 0f;
+
+            _generator = new Random();
         }
 
         public void Update(GameTime gameTime, MouseState mouseState)
         {
             _speed = Vector2.Zero;
 
+            _speedMult = _generator.NextDouble();
+
+            if (_speedMult < 0.2f)
+            {
+                _randSpeed = 1;
+            }
+            else if (_speedMult < 0.6f)
+            {
+                _randSpeed = 2;
+            }
+            else
+                _randSpeed = 3;
+
             if (mouseState.Position.X < _location.X)
             {
                 _direction = SpriteEffects.FlipHorizontally;
-                _speed.X = -1;
+                _speed.X = -_randSpeed;
             }
             else if (mouseState.Position.X > _location.X)
             {
                 _direction = SpriteEffects.None;
-                _speed.X = 1;
+                _speed.X = _randSpeed;
+            }
+
+            if (mouseState.Position.Y < _location.Y)
+            {
+                _speed.Y = -_randSpeed;
+            }
+            else if (mouseState.Position.Y > _location.Y)
+            {
+                _speed.Y = _randSpeed;
             }
 
             if (mouseState.LeftButton == ButtonState.Released)
@@ -72,14 +105,26 @@ namespace ICS4U_Monogame_5
             }
 
             _location.Offset(_speed);
-        } 
-           
-            
-        
+        }
+
+
+
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(_textures[_textureIndex], _location, null, Color.White, 0f, Vector2.Zero , _direction, 0f);
+            spriteBatch.Draw(_textures[_textureIndex], _location, null, Color.White, 0f, Vector2.Zero, _direction, 0f);
+        }
+
+        public bool Contains(Point player)
+        {
+            return _location.Contains(player);
+        }
+
+        public bool Intersects(Rectangle player)
+        {
+            return _location.Intersects(player);
+
         }
     }
+
 }
